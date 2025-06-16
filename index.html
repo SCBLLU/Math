@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Límites</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container glass">
+        <h1><span class="icon">∫</span> Calculadora de Límites</h1>
+        <form id="limitForm">
+            <div class="input-group">
+                <label for="funcion">Función f(x):</label>
+                <input type="text" id="funcion" name="funcion" placeholder="Ej: sin(x)/x" required autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="valor">x tiende a:</label>
+                <input type="number" id="valor" name="valor" step="any" required autocomplete="off">
+            </div>
+            <button class="btn-principal" type="submit">Calcular límite</button>
+        </form>
+        <div class="acciones">
+            <button type="button" id="btnImprimir">🖨️ Imprimir</button>
+            <button type="button" id="btnExportar">⬇️ Exportar tabla</button>
+            <button type="button" id="btnDescargarGrafica">🖼️ Descargar gráfica</button>
+        </div>
+        <div id="resultado"></div>
+        <canvas id="grafica" width="400" height="200"></canvas>
+        <div id="tablaValores"></div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
