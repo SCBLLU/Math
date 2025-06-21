@@ -111,15 +111,22 @@ document.getElementById('tangentForm').addEventListener('submit', function (e) {
     mostrarAproxInfo(funcInput, a, fa, dfa);
 });
 
+// Al inicio, ocultar el botón de descarga de gráfica y la sección de datos
+const downloadChartContainer = document.getElementById('downloadChartContainer');
+if (downloadChartContainer) downloadChartContainer.style.display = 'none';
+const aproxInfoContainer = document.getElementById('aproxInfoContainer');
+if (aproxInfoContainer) aproxInfoContainer.style.display = 'none';
+
 function graficar(funcInput, a, fa, dfa, f) {
     // Rango dinámico centrado en a
     const rango = 5;
     const xMin = a - rango;
     const xMax = a + rango;
-    const puntos = 200;
+    const puntos = 100;
     const xs = [];
     const ys = [];
     const ysTangent = [];
+    const tangencyPoints = [];
     for (let i = 0; i <= puntos; i++) {
         const x = xMin + (xMax - xMin) * i / puntos;
         xs.push(Number(x.toFixed(4))); // Redondeo para evitar decimales largos
@@ -132,6 +139,8 @@ function graficar(funcInput, a, fa, dfa, f) {
         }
         ys.push(yVal);
         ysTangent.push(dfa * (x - a) + fa);
+        // Solo un punto de tangencia, para mayor claridad
+        tangencyPoints.push(Math.abs(x - a) < 1e-3 ? fa : null);
     }
     if (chart) chart.destroy();
     // Restablece el tamaño del canvas para que Chart.js lo controle
@@ -165,13 +174,19 @@ function graficar(funcInput, a, fa, dfa, f) {
                 },
                 {
                     label: 'Punto de tangencia',
-                    data: xs.map(x => (Math.abs(x - a) < 1e-3 ? fa : null)),
-                    borderColor: '#e74c3c',
-                    backgroundColor: '#e74c3c',
+                    data: tangencyPoints,
+                    borderColor: '#111827',
+                    backgroundColor: '#f43f5e', // rosa fuerte
                     type: 'scatter',
-                    pointRadius: 7,
+                    pointRadius: 10,
+                    pointHoverRadius: 14,
+                    pointStyle: 'circle',
                     showLine: false,
-                    fill: false
+                    fill: false,
+                    borderWidth: 3,
+                    hoverBorderColor: '#f59e42',
+                    hoverBackgroundColor: '#f59e42',
+                    spanGaps: false
                 }
             ]
         },
@@ -183,6 +198,9 @@ function graficar(funcInput, a, fa, dfa, f) {
                 tooltip: {
                     callbacks: {
                         label: function (context) {
+                            if (context.dataset.label === 'Punto de tangencia') {
+                                return `Punto de tangencia: x=${a}, y=${fa.toFixed(4)}`;
+                            }
                             return `x=${context.label}, y=${context.parsed.y?.toFixed(4)}`;
                         }
                     }
@@ -211,11 +229,20 @@ function graficar(funcInput, a, fa, dfa, f) {
             }
         }
     });
+    // Mostrar el botón de descarga de gráfica
+    const downloadChartContainer = document.getElementById('downloadChartContainer');
+    if (downloadChartContainer) downloadChartContainer.style.display = 'block';
 }
 
 function mostrarAproxInfo(funcInput, a, fa, dfa) {
-    const infoDiv = document.getElementById('aproxInfo');
+    // Mostrar la sección de datos
+    const aproxInfoContainer = document.getElementById('aproxInfoContainer');
+    if (aproxInfoContainer) aproxInfoContainer.style.display = 'block';
+    // Llenar los valores en los spans/codes del HTML
+    document.getElementById('faValue').textContent = fa.toFixed(6);
+    document.getElementById('dfaValue').textContent = dfa.toFixed(6);
     const tangente = `y = ${dfa.toFixed(4)}(x - ${a}) + ${fa.toFixed(4)}`;
+    document.getElementById('tangenteValue').textContent = tangente;
     const xEj = a + 0.1;
     let aprox, real;
     try {
@@ -224,18 +251,21 @@ function mostrarAproxInfo(funcInput, a, fa, dfa) {
     } catch {
         aprox = real = '—';
     }
-    let errorAbs = (isFinite(aprox) && isFinite(real)) ? Math.abs(real - aprox) : '—';
-    infoDiv.innerHTML = `
-        <div class="bg-blue-50 rounded-xl p-6 shadow mt-4 w-full max-w-xl mx-auto">
-            <h3 class="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2"><i class='fa-solid fa-info-circle'></i> Datos de la Aproximación Lineal</h3>
-            <ul class="space-y-2 text-gray-700">
-                <li><b>f(a):</b> <span class="ml-2">${fa.toFixed(6)}</span></li>
-                <li><b>f'(a):</b> <span class="ml-2">${dfa.toFixed(6)}</span></li>
-                <li><b>Ecuación de la recta tangente:</b> <code class="bg-white px-1 rounded">${tangente}</code></li>
-                <li><b>Ejemplo de aproximación en x = ${(xEj).toFixed(2)}:</b>
-                    <span class="block mt-1">Tangente: <b>${aprox.toFixed(6)}</b> &nbsp;|&nbsp; Real: <b>${real.toFixed(6)}</b> &nbsp;|&nbsp; Error absoluto: <b>${errorAbs.toExponential ? errorAbs.toExponential(2) : errorAbs}</b></span>
-                </li>
-            </ul>
-        </div>
-    `;
+    document.getElementById('xEjValue').textContent = xEj.toFixed(2);
+    document.getElementById('aproxValue').textContent = isFinite(aprox) ? aprox.toFixed(6) : '—';
+    document.getElementById('realValue').textContent = isFinite(real) ? real.toFixed(6) : '—';
+    // Mostrar el botón de descarga de datos
+    const btn = document.getElementById('downloadDataBtn');
+    if (btn) {
+        btn.style.display = 'inline-flex';
+        btn.onclick = () => {
+            const contenido =
+                `Aproximación Lineal\n\nFunción: ${funcInput}\nPunto a evaluar (a): ${a}\nf(a): ${fa.toFixed(6)}\nf'(a): ${dfa.toFixed(6)}\nEcuación de la recta tangente: ${tangente}\n\nAproximación en x = ${(xEj).toFixed(2)}\nTangente: ${isFinite(aprox) ? aprox.toFixed(6) : '—'}\nReal: ${isFinite(real) ? real.toFixed(6) : '—'}`;
+            const blob = new Blob([contenido], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'datos_aproximacion.txt';
+            link.click();
+        };
+    }
 }
