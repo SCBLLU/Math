@@ -222,8 +222,6 @@ document.getElementById('tangentForm').addEventListener('submit', function (e) {
     }
     graficar(funcInput, a, fa, dfa, f);
     mostrarAproxInfo(funcInput, a, fa, dfa);
-    // Eliminar referencia a goToResultsBtn, ya no existe
-    // if (goToResultsBtn) goToResultsBtn.style.display = 'flex';
 });
 
 // Al inicio, ocultar el botón de descarga de gráfica y la sección de datos
