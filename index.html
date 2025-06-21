@@ -2,6 +2,7 @@
 <html lang="es">
 
 <head>
+    <!-- Metadatos y enlaces a librerías externas (Tailwind, FontAwesome, Math.js, Chart.js) -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aproximación Lineal (Recta Tangente)</title>
@@ -13,10 +14,13 @@
 </head>
 
 <body class="bg-gray-50 min-h-screen">
+    <!-- Contenedor principal -->
     <div class="max-w-2xl mx-auto mt-6 bg-white rounded-2xl shadow-xl p-6">
 
+        <!-- Título principal -->
         <h1 class="text-4xl font-extrabold text-center text-black mb-8">Aproximación Lineal</h1>
 
+        <!-- Botón de ayuda -->
         <div class="flex justify-start mb-6">
             <button id="openHelp"
                 class="flex items-center gap-2 px-5 py-2 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition">
@@ -25,6 +29,7 @@
             </button>
         </div>
 
+        <!-- Sección de ingreso de datos -->
         <section class="mb-8">
             <div class="bg-gray-100 rounded-2xl shadow p-6 border border-gray-200">
                 <div class="mb-6">
@@ -33,26 +38,42 @@
                         Ingresar datos
                     </h2>
                 </div>
+                <!-- Formulario para ingresar función y punto -->
                 <form id="tangentForm" autocomplete="off" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Campo de función -->
                         <div class="flex flex-col gap-2">
                             <label for="functionInput" class="flex items-center gap-2 font-semibold text-black">
                                 <i class="fa-solid fa-square-root-variable"></i> Función f(x):
                             </label>
-                            <input type="text" id="functionInput" placeholder="Ejemplo: x^2 + 3*x - 2" required
-                                autocomplete="off"
-                                class="border border-gray-300 rounded-md py-2 px-3 bg-white text-black focus:outline-none focus:border-gray-400 transition" />
+                            <div class="relative">
+                                <input type="text" id="functionInput" placeholder="Ejemplo: x^2 + 3*x - 2" required
+                                    autocomplete="off"
+                                    class="border border-gray-300 rounded-md py-2 px-3 bg-white text-black focus:outline-none focus:border-gray-400 transition pr-10" />
+                                <span id="funcIcon"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-lg input-icon"></span>
+                            </div>
                         </div>
+                        <!-- Campo del punto a evaluar -->
                         <div class="flex flex-col gap-2">
                             <label for="pointInput" class="flex items-center gap-2 font-semibold text-black">
                                 <i class="fa-solid fa-location-dot"></i> Punto a evaluar (a):
                             </label>
-                            <input type="number" id="pointInput" step="any" placeholder="Ejemplo: 1" required
-                                autocomplete="off"
-                                class="border border-gray-300 rounded-md py-2 px-3 bg-white text-black focus:outline-none focus:border-gray-400 transition" />
+                            <div class="relative">
+                                <input type="text" id="pointInput" step="any" placeholder="Ejemplo: 1" required
+                                    autocomplete="off"
+                                    class="border border-gray-300 rounded-md py-2 px-3 bg-white text-black focus:outline-none focus:border-gray-400 transition pr-10" />
+                                <span id="pointIcon"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-lg input-icon"></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex justify-end mt-4">
+                    <!-- Botones de borrar y graficar -->
+                    <div class="flex flex-wrap gap-2 justify-end mt-4">
+                        <button type="button" id="clearBtn"
+                            class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 border border-gray-300 text-gray-800 font-semibold shadow hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition">
+                            <i class="fa-solid fa-eraser"></i> Borrar
+                        </button>
                         <button type="submit"
                             class="flex items-center gap-2 px-5 py-2 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition">
                             <i class="fa-solid fa-chart-line"></i> Graficar
@@ -62,8 +83,15 @@
             </div>
         </section>
 
+        <!-- Mensaje de error -->
         <div id="errorMsg" class="text-center text-red-500 font-semibold mt-4"></div>
+        <!-- Botón flotante para ir a resultados -->
+        <button id="goToResultsBtn" style="display:none" title="Ir a resultados"
+            class="fixed bottom-8 right-8 z-50 bg-blue-600 text-white rounded-full shadow-lg p-4 hover:bg-blue-700 transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-down"></i> <span class="hidden sm:inline">Ir a resultados</span>
+        </button>
 
+        <!-- Sección de la gráfica -->
         <section class="mb-8">
             <div class="bg-gray-100 rounded-2xl shadow p-6 border border-gray-200">
                 <div class="mb-6">
@@ -71,9 +99,11 @@
                         class="text-xl font-semibold text-center text-black  rounded-t-xl py-4 border-b border-gray-200">
                         Grafica</h2>
                 </div>
+                <!-- Canvas para la gráfica -->
                 <div class="w-full h-[220px] flex items-center justify-center mb-4">
                     <canvas id="chart" class="w-full h-full"></canvas>
                 </div>
+                <!-- Botón para descargar la gráfica -->
                 <div id="downloadChartContainer" style="display:none">
                     <button id="downloadChart"
                         class="mt-6 flex items-center gap-2 px-5 py-2 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition">
@@ -83,6 +113,7 @@
             </div>
         </section>
 
+        <!-- Sección de datos de la aproximación -->
         <section>
             <div class="bg-gray-100 rounded-2xl shadow p-6 border border-gray-200">
                 <div class="mb-6">
@@ -90,6 +121,7 @@
                         Datos
                     </h2>
                 </div>
+                <!-- Contenedor de resultados de la aproximación lineal -->
                 <div id="aproxInfoContainer" style="display:none">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <i class='fa-solid fa-info-circle text-gray-400'></i> Aproximación Lineal
@@ -119,6 +151,7 @@
                             <span class="">Real: <b id="realValue" class='font-mono text-gray-900'>—</b></span>
                         </div>
                     </div>
+                    <!-- Botón para descargar los datos de la aproximación -->
                     <button id="downloadDataBtn"
                         class="mt-6 flex items-center gap-2 px-5 py-2 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
                         style="display:none"><i class='fa-solid fa-download'></i> Descargar Datos</button>
@@ -128,6 +161,7 @@
 
     </div>
 
+    <!-- Modal de ayuda con ejemplos rápidos -->
     <div id="helpModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 hidden">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-fadeIn">
             <button class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-red-500 transition"
@@ -165,6 +199,7 @@
         </div>
     </div>
 
+    <!-- Script principal -->
     <script src="app.js"></script>
 </body>
 

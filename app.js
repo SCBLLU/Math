@@ -1,22 +1,27 @@
 // app.js
+// Variable global para la gráfica
 let chart;
 
-// Elimino los botones flotantes antiguos si existen
+// Elimino los botones flotantes antiguos si existen (limpieza por si hay duplicados)
 const oldHelp = document.getElementById('openHelp');
 const oldDownload = document.getElementById('downloadChart');
 if (oldHelp && oldHelp.classList.contains('help-btn')) oldHelp.remove();
 if (oldDownload && oldDownload.classList.contains('download-btn')) oldDownload.remove();
 
-// Botón ayuda y descarga
+// Referencias a botones de ayuda y descarga
 const openHelp = document.getElementById('openHelp');
 const helpModal = document.getElementById('helpModal');
 const closeModal = document.getElementById('closeModal');
 const downloadBtn = document.getElementById('downloadChart');
 
+// Mostrar modal de ayuda
 openHelp.onclick = () => helpModal.style.display = 'block';
+// Cerrar modal de ayuda
 closeModal.onclick = () => helpModal.style.display = 'none';
+// Cerrar modal si se hace clic fuera del contenido
 window.onclick = (e) => { if (e.target === helpModal) helpModal.style.display = 'none'; };
 
+// Descargar la gráfica como imagen PNG
 downloadBtn.onclick = () => {
     const chartEl = document.getElementById('chart');
     const url = chartEl.toDataURL('image/png');
@@ -26,7 +31,7 @@ downloadBtn.onclick = () => {
     link.click();
 };
 
-// Ejemplos rápidos
+// Botones de ejemplos rápidos: rellenan los campos con ejemplos
 Array.from(document.getElementsByClassName('ejemplo-btn')).forEach(btn => {
     btn.onclick = () => {
         document.getElementById('functionInput').value = btn.dataset.func;
@@ -34,23 +39,105 @@ Array.from(document.getElementsByClassName('ejemplo-btn')).forEach(btn => {
     };
 });
 
-// Mejorar validación visual
+// Referencias a inputs y botones principales
 const functionInput = document.getElementById('functionInput');
 const pointInput = document.getElementById('pointInput');
-functionInput.addEventListener('input', () => functionInput.classList.remove('input-error'));
-pointInput.addEventListener('input', () => pointInput.classList.remove('input-error'));
+const funcIcon = document.getElementById('funcIcon');
+const pointIcon = document.getElementById('pointIcon');
+const clearBtn = document.getElementById('clearBtn');
+const goToResultsBtn = document.getElementById('goToResultsBtn');
 
-// Validación visual y lógica en tiempo real
+// Función para validar la función matemática ingresada
+function validarFuncionInput(valor) {
+    if (!valor.trim()) return { valido: false, mensaje: '' };
+    // Solo permite caracteres válidos
+    if (/[^0-9xX+\-*/^().,\sA-Za-z]/.test(valor)) {
+        return { valido: false, mensaje: 'La función contiene caracteres inválidos.' };
+    }
+    try {
+        const parsed = math.parse(valor);
+        const symbols = [];
+        parsed.traverse(function (node) {
+            if (node.isSymbolNode) symbols.push(node.name);
+        });
+        // Solo permite símbolos y funciones conocidas
+        const allowed = ['x', ...Object.keys(math).filter(k => typeof math[k] === 'function' || typeof math[k] === 'number')];
+        const notAllowed = symbols.filter(name => !allowed.includes(name));
+        if (notAllowed.length > 0) return { valido: false, mensaje: 'Símbolo no permitido: ' + notAllowed.join(', ') };
+        parsed.compile();
+        return { valido: true, mensaje: '' };
+    } catch (err) {
+        return { valido: false, mensaje: 'Sintaxis inválida.' };
+    }
+}
+
+// Validación visual en tiempo real para el input de función
+functionInput.addEventListener('input', () => {
+    functionInput.classList.remove('input-error', 'valid');
+    funcIcon.className = 'input-icon';
+    const val = functionInput.value.trim();
+    const validacion = validarFuncionInput(val);
+    if (!val) return;
+    if (validacion.valido) {
+        functionInput.classList.add('valid');
+        funcIcon.classList.add('fa-solid', 'fa-circle-check');
+    } else {
+        functionInput.classList.add('input-error');
+        funcIcon.classList.add('fa-solid', 'fa-circle-xmark');
+    }
+});
+// Validación visual en tiempo real para el input del punto
+pointInput.addEventListener('input', () => {
+    pointInput.classList.remove('input-error', 'valid');
+    pointIcon.className = 'input-icon';
+    if (!pointInput.value.trim()) return;
+    if (!isNaN(pointInput.value) && pointInput.value.trim() !== '' && isFinite(pointInput.value)) {
+        pointInput.classList.add('valid');
+        pointIcon.classList.add('fa-solid', 'fa-circle-check');
+    } else {
+        pointInput.classList.add('input-error');
+        pointIcon.classList.add('fa-solid', 'fa-circle-xmark');
+    }
+});
+
+// Botón para limpiar los campos y la gráfica
+clearBtn.onclick = () => {
+    functionInput.value = '';
+    pointInput.value = '';
+    document.getElementById('errorMsg').textContent = '';
+    functionInput.classList.remove('input-error', 'valid');
+    pointInput.classList.remove('input-error', 'valid');
+    funcIcon.className = 'input-icon';
+    pointIcon.className = 'input-icon';
+    if (chart) chart.destroy();
+    if (downloadChartContainer) downloadChartContainer.style.display = 'none';
+    if (aproxInfoContainer) aproxInfoContainer.style.display = 'none';
+    goToResultsBtn.style.display = 'none';
+};
+
+// Botón flotante para ir a la sección de resultados
+goToResultsBtn.onclick = () => {
+    const aproxInfo = document.getElementById('aproxInfoContainer');
+    if (aproxInfo && aproxInfo.style.display !== 'none') {
+        aproxInfo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        const chartSection = document.getElementById('chart');
+        if (chartSection) chartSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+};
+
+// Validación visual y lógica en tiempo real (duplicada para asegurar consistencia)
 functionInput.addEventListener('input', () => {
     const icon = document.getElementById('funcIcon');
     functionInput.classList.remove('input-error', 'valid');
     icon.className = 'input-icon';
-    if (!functionInput.value.trim()) return;
-    try {
-        math.parse(functionInput.value.trim()).compile();
+    const val = functionInput.value.trim();
+    const validacion = validarFuncionInput(val);
+    if (!val) return;
+    if (validacion.valido) {
         functionInput.classList.add('valid');
         icon.classList.add('fa-solid', 'fa-circle-check');
-    } catch {
+    } else {
         functionInput.classList.add('input-error');
         icon.classList.add('fa-solid', 'fa-circle-xmark');
     }
@@ -60,7 +147,7 @@ pointInput.addEventListener('input', () => {
     pointInput.classList.remove('input-error', 'valid');
     icon.className = 'input-icon';
     if (!pointInput.value.trim()) return;
-    if (!isNaN(pointInput.value) && pointInput.value.trim() !== '') {
+    if (!isNaN(pointInput.value) && pointInput.value.trim() !== '' && isFinite(pointInput.value)) {
         pointInput.classList.add('valid');
         icon.classList.add('fa-solid', 'fa-circle-check');
     } else {
@@ -68,6 +155,11 @@ pointInput.addEventListener('input', () => {
         icon.classList.add('fa-solid', 'fa-circle-xmark');
     }
 });
+
+// Evento principal: al enviar el formulario, valida y grafica
+// Calcula la derivada, evalúa en el punto y muestra resultados
+// Si hay error, muestra mensaje
+// Si todo está bien, grafica y muestra info
 
 document.getElementById('tangentForm').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -77,25 +169,44 @@ document.getElementById('tangentForm').addEventListener('submit', function (e) {
     errorMsg.textContent = '';
     functionInput.classList.remove('input-error');
     pointInput.classList.remove('input-error');
+    funcIcon.className = 'input-icon';
+    pointIcon.className = 'input-icon';
 
-    // Validación básica
+    // Validación unificada
+    const validacion = validarFuncionInput(funcInput);
     if (!funcInput) {
         errorMsg.textContent = 'Por favor ingresa una función.';
         functionInput.classList.add('input-error');
+        funcIcon.classList.add('fa-solid', 'fa-circle-xmark');
         return;
     }
-    if (pointVal === '' || isNaN(pointVal)) {
-        errorMsg.textContent = 'Por favor ingresa un valor numérico para a.';
+    if (!validacion.valido) {
+        errorMsg.textContent = validacion.mensaje;
+        functionInput.classList.add('input-error');
+        funcIcon.classList.add('fa-solid', 'fa-circle-xmark');
+        return;
+    }
+    if (pointVal === '' || isNaN(pointVal) || !isFinite(pointVal)) {
+        errorMsg.textContent = 'Por favor ingresa un valor numérico válido para a.';
         pointInput.classList.add('input-error');
+        pointIcon.classList.add('fa-solid', 'fa-circle-xmark');
         return;
     }
     const a = parseFloat(pointVal);
+    if (Math.abs(a) > 1e6) {
+        errorMsg.textContent = 'El valor de a es demasiado grande.';
+        pointInput.classList.add('input-error');
+        pointIcon.classList.add('fa-solid', 'fa-circle-xmark');
+        return;
+    }
     let f, df;
     try {
         f = math.parse(funcInput).compile();
         df = math.derivative(funcInput, 'x').compile();
     } catch (err) {
         errorMsg.textContent = 'Función inválida. Revisa la sintaxis.';
+        functionInput.classList.add('input-error');
+        funcIcon.classList.add('fa-solid', 'fa-circle-xmark');
         return;
     }
     let fa, dfa;
@@ -105,10 +216,13 @@ document.getElementById('tangentForm').addEventListener('submit', function (e) {
         if (!isFinite(fa) || !isFinite(dfa)) throw 'Valor no finito';
     } catch (err) {
         errorMsg.textContent = 'No se pudo evaluar la función o su derivada en x = ' + a;
+        pointInput.classList.add('input-error');
+        pointIcon.classList.add('fa-solid', 'fa-circle-xmark');
         return;
     }
     graficar(funcInput, a, fa, dfa, f);
     mostrarAproxInfo(funcInput, a, fa, dfa);
+    goToResultsBtn.style.display = 'flex';
 });
 
 // Al inicio, ocultar el botón de descarga de gráfica y la sección de datos
@@ -117,6 +231,7 @@ if (downloadChartContainer) downloadChartContainer.style.display = 'none';
 const aproxInfoContainer = document.getElementById('aproxInfoContainer');
 if (aproxInfoContainer) aproxInfoContainer.style.display = 'none';
 
+// Función para graficar la función y la tangente usando Chart.js
 function graficar(funcInput, a, fa, dfa, f) {
     // Rango dinámico centrado en a
     const rango = 5;
@@ -234,6 +349,7 @@ function graficar(funcInput, a, fa, dfa, f) {
     if (downloadChartContainer) downloadChartContainer.style.display = 'block';
 }
 
+// Muestra la información de la aproximación lineal y permite descargar los datos
 function mostrarAproxInfo(funcInput, a, fa, dfa) {
     // Mostrar la sección de datos
     const aproxInfoContainer = document.getElementById('aproxInfoContainer');
