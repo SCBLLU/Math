@@ -1,35 +1,139 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Límites</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Aproximación Lineal (Recta Tangente)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <div class="container glass">
-        <h1><span class="icon">∫</span> Calculadora de Límites</h1>
-        <form id="limitForm">
-            <div class="input-group">
-                <label for="funcion">Función f(x):</label>
-                <input type="text" id="funcion" name="funcion" placeholder="Ej: sin(x)/x" required autocomplete="off">
-            </div>
-            <div class="input-group">
-                <label for="valor">x tiende a:</label>
-                <input type="number" id="valor" name="valor" step="any" required autocomplete="off">
-            </div>
-            <button class="btn-principal" type="submit">Calcular límite</button>
-        </form>
-        <div class="acciones">
-            <button type="button" id="btnImprimir">🖨️ Imprimir</button>
-            <button type="button" id="btnExportar">⬇️ Exportar tabla</button>
-            <button type="button" id="btnDescargarGrafica">🖼️ Descargar gráfica</button>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-2xl mx-auto mt-6 bg-white rounded-2xl shadow-xl p-6">
+
+        <h1 class="text-4xl font-extrabold text-center text-black mb-8">Aproximación Lineal</h1>
+
+        <div class="flex justify-start mb-6">
+            <button id="openHelp"
+                class="flex items-center gap-2 px-5 py-2 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition">
+                <i class="fa-regular fa-circle-question text-lg"></i>
+                <span>Ayuda</span>
+            </button>
         </div>
-        <div id="resultado"></div>
-        <canvas id="grafica" width="400" height="200"></canvas>
-        <div id="tablaValores"></div>
+
+        <section class="mb-8">
+            <div class="bg-gray-100 rounded-2xl shadow p-6 border border-gray-200">
+                <div class="mb-6">
+                    <h2
+                        class="text-xl font-semibold text-center text-black  rounded-t-xl py-4 border-b border-gray-200">
+                        Ingresar datos
+                    </h2>
+                </div>
+                <form id="tangentForm" autocomplete="off" class="space-y-4">
+                    <div class="flex flex-col gap-4">
+                        <div class="flex flex-col sm:flex-row items-center gap-3">
+                            <label for="functionInput"
+                                class="flex items-center gap-2 font-semibold text-black min-w-[160px]">
+                                <i class="fa-solid fa-square-root-variable"></i> Función f(x):
+                            </label>
+                            <input type="text" id="functionInput" placeholder="Ejemplo: x^2 + 3*x - 2" required
+                                autocomplete="off"
+                                class="w-full border border-gray-300 rounded-md py-2 px-3 bg-white text-black focus:outline-none focus:border-gray-400 transition" />
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-3">
+                            <label for="pointInput"
+                                class="flex items-center gap-2 font-semibold text-black min-w-[160px]">
+                                <i class="fa-solid fa-location-dot"></i> Punto a evaluar (a):
+                            </label>
+                            <input type="number" id="pointInput" step="any" placeholder="Ejemplo: 1" required
+                                autocomplete="off"
+                                class="w-full border border-gray-300 rounded-md py-2 px-3 bg-white text-black focus:outline-none focus:border-gray-400 transition" />
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                class="flex items-center gap-2 px-5 py-2 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition">
+                                <i class="fa-solid fa-chart-line"></i> Graficar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <div id="errorMsg" class="text-center text-red-500 font-semibold min-h-[24px] mb-4"></div>
+
+        <section class="mb-8">
+            <div class="bg-gray-100 rounded-2xl shadow p-6 border border-gray-200 flex flex-col items-center">
+                <div class="mb-6">
+                    <h2
+                        class="text-xl font-semibold text-center text-black  rounded-t-xl py-4 border-b border-gray-200">
+                        Grafica</h2>
+                </div>
+                <div class="w-full h-[220px] flex items-center justify-center mb-4">
+                    <canvas id="chart" class="w-full h-full"></canvas>
+                </div>
+                <button id="downloadChart"
+                    class="flex items-center gap-2 px-5 py-2 rounded-lg bg-white border border-gray-300 text-gray-800 font-semibold shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition">
+                    <i class="fa-solid fa-download"></i> Descargar Gráfica
+                </button>
+            </div>
+        </section>
+
+        <section>
+            <div class="bg-gray-100 rounded-2xl shadow p-6 border border-gray-200">
+                <div class="mb-6">
+                    <h2
+                        class="text-xl font-semibold text-center text-black  rounded-t-xl py-4 border-b border-gray-200">
+                        Datos</h2>
+                </div>
+                <div id="aproxInfo"></div>
+            </div>
+        </section>
+
     </div>
-    <script src="main.js"></script>
+
+    <div id="helpModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-fadeIn">
+            <button class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-red-500 transition"
+                id="closeModal"><i class="fa-solid fa-xmark"></i></button>
+            <h2 class="text-xl font-bold mb-3 text-gray-800">¿Cómo usar la app?</h2>
+            <ul class="list-disc pl-6 text-gray-700 mb-4 space-y-1">
+                <li>Ingresa una función en términos de <b>x</b>. Ejemplo: <code
+                        class="bg-gray-100 px-1 rounded">x^2 + 3*x - 2</code></li>
+                <li>Ingresa el valor de <b>a</b> donde quieres la tangente. Ejemplo: <code
+                        class="bg-gray-100 px-1 rounded">1</code></li>
+                <li>Presiona <b>Graficar</b> para ver la función y su recta tangente.</li>
+                <li>Puedes descargar la gráfica como imagen.</li>
+            </ul>
+            <h3 class="font-semibold text-gray-800 mb-2">Ejercicios rápidos:</h3>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button
+                    class="ejemplo-btn px-3 py-1 rounded bg-gray-200 text-black hover:bg-gray-300 border border-gray-300 transition"
+                    data-func="x^2" data-a="2">x², a = 2</button>
+                <button
+                    class="ejemplo-btn px-3 py-1 rounded bg-gray-200 text-black hover:bg-gray-300 border border-gray-300 transition"
+                    data-func="sin(x)" data-a="0">sin(x), a = 0</button>
+                <button
+                    class="ejemplo-btn px-3 py-1 rounded bg-gray-200 text-black hover:bg-gray-300 border border-gray-300 transition"
+                    data-func="exp(x)" data-a="1">exp(x), a = 1</button>
+                <button
+                    class="ejemplo-btn px-3 py-1 rounded bg-gray-200 text-black hover:bg-gray-300 border border-gray-300 transition"
+                    data-func="log(x)" data-a="2">log(x), a = 2</button>
+                <button
+                    class="ejemplo-btn px-3 py-1 rounded bg-gray-200 text-black hover:bg-gray-300 border border-gray-300 transition"
+                    data-func="1/x" data-a="2">1/x, a = 2</button>
+                <button
+                    class="ejemplo-btn px-3 py-1 rounded bg-gray-200 text-black hover:bg-gray-300 border border-gray-300 transition"
+                    data-func="sqrt(x)" data-a="9">√x, a = 9</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
+
 </html>
