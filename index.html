@@ -85,10 +85,11 @@
 
         <!-- Mensaje de error -->
         <div id="errorMsg" class="text-center text-red-500 font-semibold mt-4"></div>
-        <!-- Botón flotante para ir a resultados -->
-        <button id="goToResultsBtn" style="display:none" title="Ir a resultados"
-            class="fixed bottom-8 right-8 z-50 bg-blue-600 text-white rounded-full shadow-lg p-4 hover:bg-blue-700 transition flex items-center gap-2">
-            <i class="fa-solid fa-arrow-down"></i> <span class="hidden sm:inline">Ir a resultados</span>
+        <!-- Botón flotante circular para volver arriba  -->
+        <button id="goToTopBtn" style="display:none" title="Volver al inicio" aria-label="Volver al inicio"
+            class="fixed bottom-8 right-8 z-50 bg-blue-600 text-white rounded-full shadow-lg w-10 h-10 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 flex items-center justify-center p-0">
+            <span class="sr-only">Volver al inicio</span>
+            <i class="fa-solid fa-arrow-up text-lg"></i>
         </button>
 
         <!-- Sección de la gráfica -->

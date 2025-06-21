@@ -45,7 +45,7 @@ const pointInput = document.getElementById('pointInput');
 const funcIcon = document.getElementById('funcIcon');
 const pointIcon = document.getElementById('pointIcon');
 const clearBtn = document.getElementById('clearBtn');
-const goToResultsBtn = document.getElementById('goToResultsBtn');
+const goToTopBtn = document.getElementById('goToTopBtn'); // Nuevo botón flotante
 
 // Función para validar la función matemática ingresada
 function validarFuncionInput(valor) {
@@ -112,19 +112,19 @@ clearBtn.onclick = () => {
     if (chart) chart.destroy();
     if (downloadChartContainer) downloadChartContainer.style.display = 'none';
     if (aproxInfoContainer) aproxInfoContainer.style.display = 'none';
-    goToResultsBtn.style.display = 'none';
+    if (goToTopBtn) goToTopBtn.style.display = 'none';
 };
 
-// Botón flotante para ir a la sección de resultados
-goToResultsBtn.onclick = () => {
-    const aproxInfo = document.getElementById('aproxInfoContainer');
-    if (aproxInfo && aproxInfo.style.display !== 'none') {
-        aproxInfo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-        const chartSection = document.getElementById('chart');
-        if (chartSection) chartSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-};
+// Al inicio, ocultar el botón flotante
+if (goToTopBtn) goToTopBtn.style.display = 'none';
+
+// Acción del botón flotante: volver arriba al formulario
+if (goToTopBtn) {
+    goToTopBtn.onclick = () => {
+        const form = document.getElementById('tangentForm');
+        if (form) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+}
 
 // Validación visual y lógica en tiempo real (duplicada para asegurar consistencia)
 functionInput.addEventListener('input', () => {
@@ -222,7 +222,8 @@ document.getElementById('tangentForm').addEventListener('submit', function (e) {
     }
     graficar(funcInput, a, fa, dfa, f);
     mostrarAproxInfo(funcInput, a, fa, dfa);
-    goToResultsBtn.style.display = 'flex';
+    // Eliminar referencia a goToResultsBtn, ya no existe
+    // if (goToResultsBtn) goToResultsBtn.style.display = 'flex';
 });
 
 // Al inicio, ocultar el botón de descarga de gráfica y la sección de datos
@@ -349,11 +350,13 @@ function graficar(funcInput, a, fa, dfa, f) {
     if (downloadChartContainer) downloadChartContainer.style.display = 'block';
 }
 
-// Muestra la información de la aproximación lineal y permite descargar los datos
+// Mostrar/ocultar el botón flotante según la visibilidad de resultados
 function mostrarAproxInfo(funcInput, a, fa, dfa) {
     // Mostrar la sección de datos
     const aproxInfoContainer = document.getElementById('aproxInfoContainer');
     if (aproxInfoContainer) aproxInfoContainer.style.display = 'block';
+    // Mostrar el botón flotante para volver arriba
+    if (goToTopBtn) goToTopBtn.style.display = 'flex';
     // Llenar los valores en los spans/codes del HTML
     document.getElementById('faValue').textContent = fa.toFixed(6);
     document.getElementById('dfaValue').textContent = dfa.toFixed(6);
